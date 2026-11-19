@@ -1,0 +1,77 @@
+# 환경변수 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+*.env.local
+
+# Claude Code / Playwright
+.claude/
+.playwright-mcp/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+dist/
+
+# Java
+*.class
+build/
+.gradle/
+out/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.log
+
+# Test artifacts
+test-results/
+playwright-report/
+e2e/
+e2e-screenshots/
+test-ai/
+test-files/
+
+# 업로드 파일 (런타임 생성)
+backend/uploads/
+
+# v1 아카이브 (레포에 불필요)
+v1-backend/
+v1-frontend/
+
+# 스크린샷 / 임시 이미지 (개발 중 캡처)
+*.png
+*.webp
+*.jpg
+*.jpeg
+# 예외: README 화면 캡처, PWA 아이콘
+!assets/screenshots/*.png
+!frontend/public/icons/*.png
+
+# 임시 파일
+tmp-*
+latest-ai-result.md
+codex-business-model.md
+presentation.html
+
+# 루트 package (프론트엔드는 frontend/ 하위)
+/package.json
+/package-lock.json
+
+# Pencil 디자인 파일
+*.pen
+
+# 개인 작업 노트 (공개 저장소에는 docs/ 의 정리된 문서만 둔다)
+docs/*
+!docs/deployment.md
+!docs/feature-overview-legacy.md
+memory/

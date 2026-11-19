@@ -1,0 +1,201 @@
+package com.fundmessenger.club.service;
+
+import com.fundmessenger.calendar.entity.CalendarEvent;
+import com.fundmessenger.calendar.repository.CalendarEventRepository;
+import com.fundmessenger.club.dto.AnnouncementResponse;
+import com.fundmessenger.club.dto.CreateAnnouncementRequest;
+import com.fundmessenger.club.entity.Announcement;
+import com.fundmessenger.club.entity.Club;
+import com.fundmessenger.club.entity.ClubMembership;
+import com.fundmessenger.club.entity.MemberStatus;
+import com.fundmessenger.club.repository.AnnouncementRepository;
+import com.fundmessenger.club.repository.ClubMembershipRepository;
+import com.fundmessenger.club.repository.ClubRepository;
+import com.fundmessenger.support.TestFixtures;
+import com.fundmessenger.user.entity.User;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AnnouncementService 단위 테스트")
+class AnnouncementServiceTest {
+
+    @Mock AnnouncementRepository announcementRepository;
+    @Mock CalendarEventRepository calendarEventRepository;
+    @Mock ClubRepository clubRepository;
+    @Mock ClubMembershipRepository clubMembershipRepository;
+    @Mock ClubAuthorizationService authService;
+    @Mock ApplicationEventPublisher eventPublisher;
+
+    @InjectMocks AnnouncementService announcementService;
+
+    private Club club;
+    private User user;
+    private ClubMembership membership;
+
+    @BeforeEach
+    void setUp() {
+        club = TestFixtures.club(1L, "테스트동아리");
+        user = TestFixtures.user(10L, "user@test.dev");
+        membership = TestFixtures.approvedMembership(100L, user, club);
+    }
+
+    // ── createAnnouncement ──
+
+    @Nested
+    @DisplayName("createAnnouncement(공지 생성)")
+    class CreateAnnouncementTests {
+
+        @Test
+        @DisplayName("eventDate가 있으면 CalendarEvent도 자동 생성된다")
+        void createAnnouncement_createsCalendarEvent() {
+            // given
+            given(authService.validateClubMember(10L, 1L)).willReturn(membership);
+            given(authService.isExecutive(membership)).willReturn(true);
+            given(clubRepository.findById(1L)).willReturn(Optional.of(club));
+            given(announcementRepository.save(any(Announcement.class))).willAnswer(inv -> {
+                Announcement a = inv.getArgument(0);
+                a.setId(2L);
+                return a;
+            });
+            given(calendarEventRepository.save(any(CalendarEvent.class))).willAnswer(inv -> {
+                CalendarEvent e = inv.getArgument(0);
+                e.setId(300L);
+                return e;
+            });
+            given(clubMembershipRepository.findByClubIdAndStatus(1L, MemberStatus.APPROVED))
+                    .willReturn(List.of(membership));
+
+            CreateAnnouncementRequest request = new CreateAnnouncementRequest();
+            request.setTitle("MT 일정");
+            request.setContent("강원도 MT 갑니다.");
+            request.setEventDate(LocalDate.of(2026, 4, 15));
+
+            // when
+            AnnouncementResponse response = announcementService.createAnnouncement(1L, request, 10L);
+
+            // then
+            verify(calendarEventRepository).save(any(CalendarEvent.class));
+            ArgumentCaptor<Announcement> captor = ArgumentCaptor.forClass(Announcement.class);
+            verify(announcementRepository).save(captor.capture());
+            assertThat(captor.getValue().getLinkedEvent()).isNotNull();
+            assertThat(captor.getValue().getLinkedEvent().getId()).isEqualTo(300L);
+        }
+
+        @Test
+        @DisplayName("reminderDaysBefore가 설정되면 Announcement에 저장된다")
+        void createAnnouncement_savesReminderDays() {
+            // given
+            given(authService.validateClubMember(10L, 1L)).willReturn(membership);
+            given(authService.isExecutive(membership)).willReturn(true);
+            given(clubRepository.findById(1L)).willReturn(Optional.of(club));
+            given(announcementRepository.save(any(Announcement.class))).willAnswer(inv -> {
+                Announcement a = inv.getArgument(0);
+                a.setId(3L);
+                return a;
+            });
+            given(clubMembershipRepository.findByClubIdAndStatus(1L, MemberStatus.APPROVED))
+                    .willReturn(List.of(membership));
+
+            CreateAnnouncementRequest request = new CreateAnnouncementRequest();
+            request.setTitle("정기모임 안내");
+            request.setContent("이번 주 토요일 정기모임입니다.");
+            request.setReminderDaysBefore(List.of(7, 3, 1));
+
+            // when
+            announcementService.createAnnouncement(1L, request, 10L);
+
+            // then
+            ArgumentCaptor<Announcement> captor = ArgumentCaptor.forClass(Announcement.class);
+            verify(announcementRepository).save(captor.capture());
+            assertThat(captor.getValue().getReminderDaysBefore()).isEqualTo("7,3,1");
+        }
+
+        @Test
+        @DisplayName("임원이 아니면 SecurityException이 발생한다")
+        void createAnnouncement_rejectsNonExecutive() {
+            // given
+            given(authService.validateClubMember(10L, 1L)).willReturn(membership);
+            given(authService.isExecutive(membership)).willReturn(false);
+
+            CreateAnnouncementRequest request = new CreateAnnouncementRequest();
+            request.setTitle("비인가 공지");
+            request.setContent("내용");
+
+            // when & then
+            assertThatThrownBy(() -> announcementService.createAnnouncement(1L, request, 10L))
+                    .isInstanceOf(SecurityException.class)
+                    .hasMessageContaining("임원급만");
+        }
+    }
+
+    // ── getAnnouncements ──
+
+    @Test
+    @DisplayName("getAnnouncements — 공지 목록을 반환한다")
+    void getAnnouncements_returnsList() {
+        // given
+        given(authService.validateClubMember(10L, 1L)).willReturn(membership);
+
+        Announcement a = Announcement.builder()
+                .club(club).title("공지1").content("내용1")
+                .createdBy(membership).build();
+        a.setId(1L);
+        a.setCreatedAt(LocalDateTime.now());
+
+        given(announcementRepository.findByClubIdOrderByIsPinnedDescCreatedAtDesc(1L))
+                .willReturn(List.of(a));
+
+        // when
+        List<AnnouncementResponse> result = announcementService.getAnnouncements(1L, 10L);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle()).isEqualTo("공지1");
+    }
+
+    // ── togglePin ──
+
+    @Test
+    @DisplayName("togglePin — 고정 상태를 토글한다")
+    void togglePin_togglesPinned() {
+        // given
+        given(authService.validateClubMember(10L, 1L)).willReturn(membership);
+        given(authService.isExecutive(membership)).willReturn(true);
+
+        Announcement a = Announcement.builder()
+                .club(club).title("공지").content("내용")
+                .createdBy(membership).isPinned(false).build();
+        a.setId(5L);
+        given(announcementRepository.findById(5L)).willReturn(Optional.of(a));
+
+        // when
+        announcementService.togglePin(1L, 5L, 10L);
+
+        // then
+        assertThat(a.isPinned()).isTrue();
+
+        // 한번 더 토글하면 다시 false
+        announcementService.togglePin(1L, 5L, 10L);
+        assertThat(a.isPinned()).isFalse();
+    }
+}

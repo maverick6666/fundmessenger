@@ -1,0 +1,79 @@
+package com.fundmessenger.file.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+
+class FileStorageServiceTest {
+
+    @TempDir
+    Path tempDir;
+
+    FileStorageService sut;
+
+    @BeforeEach
+    void setUp() {
+        sut = new FileStorageService(tempDir.toString());
+    }
+
+    @Test
+    @DisplayName("PDF 저장 — 파일이 저장되고 UUID 파일명이 반환된다")
+    void storePdf_returnsStoredFilename() throws IOException {
+        // given
+        MultipartFile file = mock(MultipartFile.class);
+        given(file.isEmpty()).willReturn(false);
+        given(file.getSize()).willReturn(1024L);
+        given(file.getContentType()).willReturn("application/pdf");
+        given(file.getOriginalFilename()).willReturn("report.pdf");
+        // transferTo 호출 시 실제 파일 생성을 시뮬레이션
+        willAnswer(inv -> {
+            File target = inv.getArgument(0);
+            Files.write(target.toPath(), new byte[]{1, 2, 3});
+            return null;
+        }).given(file).transferTo(any(File.class));
+
+        // when
+        String storedName = sut.storePdf(file);
+
+        // then
+        assertThat(storedName).endsWith(".pdf");
+        assertThat(storedName).isNotEqualTo("report.pdf"); // UUID 기반
+        assertThat(Files.exists(tempDir.resolve(storedName))).isTrue();
+    }
+
+    @Test
+    @DisplayName("파일 삭제 — 기존 파일이 삭제된다")
+    void deleteFile_removesFile() throws IOException {
+        // given
+        Path testFile = tempDir.resolve("test-delete.pdf");
+        Files.write(testFile, new byte[]{1, 2, 3});
+        assertThat(Files.exists(testFile)).isTrue();
+
+        // when
+        sut.deleteFile("test-delete.pdf");
+
+        // then
+        assertThat(Files.exists(testFile)).isFalse();
+    }
+
+    @Test
+    @DisplayName("업로드 디렉토리 조회 — 설정된 경로를 반환한다")
+    void getUploadDir_returnsPath() {
+        // when
+        Path uploadDir = sut.getUploadDir();
+
+        // then
+        assertThat(uploadDir).isEqualTo(tempDir.toAbsolutePath().normalize());
+    }
+}

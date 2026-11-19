@@ -1,0 +1,138 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: fundmessenger
+
+  # PostgreSQL
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/fundmessenger?charSet=UTF-8}
+    username: ${DB_USERNAME:funduser}
+    password: ${DB_PASSWORD:localdev-only}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: "SET client_encoding TO 'UTF8'"
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+      repositories:
+        enabled: false
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}   # 프로덕션: validate
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: ${JPA_FORMAT_SQL:false}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 16      # N+1 완화
+        jdbc:
+          batch_size: 25                  # 벌크 INSERT 성능 향상
+        order_inserts: true
+        order_updates: true
+
+  # Multipart (파일 업로드)
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  # Jackson
+  jackson:
+    default-property-inclusion: non_null
+
+# JWT
+jwt:
+  secret: ${SECRET_KEY:fm-dev-secret-key-default}
+  expiration: 604800000  # 7일 (밀리초)
+
+# OAuth2 클라이언트 설정
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${OAUTH_GOOGLE_REDIRECT:http://localhost:8080/api/auth/oauth2/callback/google}
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: ${OAUTH_KAKAO_REDIRECT:http://localhost:8080/api/auth/oauth2/callback/kakao}
+  naver:
+    client-id: ${NAVER_OAUTH_CLIENT_ID}
+    client-secret: ${NAVER_OAUTH_CLIENT_SECRET}
+    redirect-uri: ${OAUTH_NAVER_REDIRECT:http://localhost:8080/api/auth/oauth2/callback/naver}
+
+# 프론트엔드 URL (소셜로그인 콜백 후 리다이렉트)
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  environment: ${ENVIRONMENT:development}
+  upload-dir: ${UPLOAD_DIR:uploads}
+
+# Google Cloud Storage (프로덕션 파일 저장)
+gcs:
+  bucket-name: ${GCS_BUCKET_NAME:}
+  # 비어있으면 로컬 저장, 값 있으면 GCS 사용
+
+# 종토방 외부 API
+kis:
+  app-key: ${KIS_APP_KEY:}
+  app-secret: ${KIS_APP_SECRET:}
+  base-url: https://openapi.koreainvestment.com:9443
+
+naver:
+  search:
+    client-id: ${NAVER_CLIENT_ID:}
+    client-secret: ${NAVER_CLIENT_SECRET:}
+
+marketaux:
+  api-token: ${MARKETAUX_API_KEY:}
+
+cerebras:
+  api-keys: ${CEREBRAS_API_KEYS:}
+  model: ${CEREBRAS_MODEL:qwen-3-235b-a22b-instruct-2507}
+
+gemini:
+  api-keys: ${GEMINI_API_KEYS:}
+  model: ${GEMINI_MODEL:gemini-2.5-flash-lite}
+
+# 로깅
+logging:
+  level:
+    com.fundmessenger: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${LOG_SECURITY_LEVEL:WARN}
+
+jongtobang:
+  news-pipeline:
+    enabled: ${NEWS_PIPELINE_ENABLED:true}
+    fixed-delay-ms: ${NEWS_PIPELINE_FIXED_DELAY_MS:3600000}
+    initial-delay-ms: ${NEWS_PIPELINE_INITIAL_DELAY_MS:120000}
+
+# 뉴스 검색 API 통합 관리
+news-search:
+  tavily:
+    api-keys: ${TAVILY_API_KEYS:}
+    daily-limit-per-key: 16
+  serpapi:
+    api-keys: ${SERPAPI_API_KEYS:}
+    daily-limit-per-key: 4
+  marketaux:
+    api-keys: ${MARKETAUX_API_KEY:}
+    daily-limit-per-key: 50
+
+# Web Push (VAPID)
+webpush:
+  vapid:
+    public-key: ${VAPID_PUBLIC_KEY:}
+    private-key: ${VAPID_PRIVATE_KEY:}
+    subject: ${VAPID_CLAIMS_EMAIL:mailto:fund@messenger.app}

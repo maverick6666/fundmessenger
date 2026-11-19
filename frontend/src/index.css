@@ -1,0 +1,298 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Brand — Scandinavian sage green */
+  --color-primary: #7C9082;
+  --color-primary-hover: #6B7F71;
+  --color-kakao: #FEE500;
+  --color-kakao-text: #191919;
+  --color-naver: #03C75A;
+
+  /* Semantic — 배경 (warm cream) */
+  --color-background: #FAF8F5;
+  --color-surface: #ffffff;
+
+  /* Semantic — 보더 (warm gray) */
+  --color-border: #E8E4DF;
+  --color-border-subtle: #F3F0EC;
+
+  /* Semantic — 텍스트 (moss green) */
+  --color-text: #2D3A2E;
+  --color-text-secondary: #5A6B5C;
+  --color-text-muted: #9BA89D;
+
+  /* Semantic — 상태 */
+  --color-danger: #C4564A;
+  --color-success: #5A8A62;
+  --color-accent: #D4915A;
+
+  /* Elevation 그림자 */
+  --shadow-e1: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-e2: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.03);
+  --shadow-e2-hover: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* ===== 펀드팀 serif 타이포그래피 ===== */
+.fund-serif { font-family: 'Noto Serif KR', 'Crimson Pro', serif; }
+
+/* 사이드바 sticky 오프셋 (헤더+탭 높이) */
+:root {
+  --header-h: 124px;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ===== 감성 shimmer 효과 ===== */
+@keyframes sentiment-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes bar-shimmer {
+  0% { background-position: 0% 200%; }
+  100% { background-position: 0% -200%; }
+}
+
+/* 뱃지 */
+.sentiment-badge-bullish {
+  background: linear-gradient(110deg, #fef2f2 0%, #fecaca 40%, #fff1f2 50%, #fecaca 60%, #fef2f2 100%);
+  background-size: 200% 100%;
+  animation: sentiment-shimmer 3s ease-in-out infinite;
+  color: #dc2626;
+  font-weight: 700;
+}
+.sentiment-badge-bearish {
+  background: linear-gradient(110deg, #eff6ff 0%, #bfdbfe 40%, #f0f7ff 50%, #bfdbfe 60%, #eff6ff 100%);
+  background-size: 200% 100%;
+  animation: sentiment-shimmer 3s ease-in-out infinite;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* 좌측 바 */
+.sentiment-bar-bullish {
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(180deg, #fca5a5 0%, #ef4444 40%, #fecaca 50%, #ef4444 60%, #fca5a5 100%) 1;
+  border-image-slice: 1;
+  animation: bar-shimmer 3s ease-in-out infinite;
+  background-size: 100% 200%;
+}
+.sentiment-bar-bearish {
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(180deg, #93c5fd 0%, #3b82f6 40%, #bfdbfe 50%, #3b82f6 60%, #93c5fd 100%) 1;
+  border-image-slice: 1;
+  animation: bar-shimmer 3s ease-in-out infinite;
+  background-size: 100% 200%;
+}
+
+/* ===== Toast 애니메이션 ===== */
+@keyframes toast-enter {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-exit {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(80px); }
+}
+.animate-toast-enter { animation: toast-enter 0.3s ease-out both; }
+.animate-toast-exit  { animation: toast-exit 0.3s ease-in both; }
+
+/* ===== 대시보드 애니메이션 ===== */
+@keyframes dash-fade-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes micro-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-dash-fade-in { animation: dash-fade-in 0.3s ease-out both; }
+.animate-micro-bounce { animation: micro-bounce 0.4s ease-out; }
+.animate-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ===== 커스텀 스크롤바 ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+
+/* ===== 페이지/리스트/모달 애니메이션 ===== */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-fade-in-up { animation: fade-in-up 0.3s ease-out both; }
+.stagger-item { animation: fade-in-up 0.25s ease-out both; }
+.animate-modal-in { animation: modal-in 0.2s ease-out both; }
+
+@keyframes dropdown-slide {
+  from { opacity: 0; transform: scaleY(0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ===== PWA 설치 안내 슬라이드업 ===== */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.3s ease-out both; }
+
+/* ===== 모바일 사이드바 슬라이드인 ===== */
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-left { animation: slide-in-left 0.25s ease-out both; }
+
+/* ===== 모바일 사이드바: 카드 스타일 평탄화 ===== */
+.mobile-sidebar-flat > div {
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: static !important;
+  height: auto !important;
+}
+
+/* ===== 모바일 탭 스크롤바 숨김 ===== */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ===== 접근성 — 모션 축소 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 모달 오버스크롤 방지 ===== */
+.modal-overlay { overscroll-behavior: contain; }
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #FAF8F5;
+  color: #2D3A2E;
+}
+
+/* ===== 스칸디나비안 세리프 헤더 ===== */
+.scandi-heading {
+  font-family: 'Fraunces', 'Noto Serif KR', Georgia, serif;
+  font-weight: 600;
+}
+
+/* ===== TipTap 리치 에디터 스타일 ===== */
+
+/* 에디터 영역 기본 설정 */
+.tiptap {
+  outline: none;
+  min-height: 360px;
+  padding: 1.5rem;
+  line-height: 1.75;
+  font-size: 0.9375rem;
+  color: #1a1a2e;
+  cursor: text;
+}
+
+.tiptap:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #93c5fd;
+  border-radius: 0.5rem;
+}
+
+/* 플레이스홀더 */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}
+
+/* 제목 */
+.tiptap h1 { font-size: 1.875rem; font-weight: 700; margin: 1.5rem 0 0.75rem; line-height: 1.3; }
+.tiptap h2 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.625rem; line-height: 1.3; }
+.tiptap h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem; line-height: 1.4; }
+
+/* 문단 */
+.tiptap p { margin: 0.5rem 0; }
+
+/* 볼드/이탤릭/취소선 */
+.tiptap strong { font-weight: 700; }
+.tiptap em { font-style: italic; }
+.tiptap s { text-decoration: line-through; }
+
+/* 리스트 */
+.tiptap ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.tiptap ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.tiptap li { margin: 0.25rem 0; }
+.tiptap li p { margin: 0; }
+
+/* 인용문 */
+.tiptap blockquote {
+  border-left: 3px solid #2563eb;
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: #4b5563;
+  font-style: italic;
+}
+
+/* 코드 */
+.tiptap code {
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+.tiptap pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+.tiptap pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+/* 구분선 */
+.tiptap hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* 이미지 */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}

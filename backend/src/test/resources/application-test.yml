@@ -1,0 +1,80 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/fundmessenger_test
+    username: funduser
+    password: ${TEST_DB_PASSWORD:localdev-only}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 16
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 0  # random port for tests
+
+jwt:
+  secret: test-secret-key-for-automated-tests-minimum-32-characters-long
+  expiration: 3600000  # 1 hour
+
+app:
+  frontend-url: http://localhost:3000
+  environment: test
+  init-data: false
+
+# External APIs - fake keys for test profile
+oauth2:
+  google:
+    client-id: fake-google-client-id
+    client-secret: fake-google-client-secret
+    redirect-uri: http://localhost:8080/api/auth/oauth2/callback/google
+  kakao:
+    client-id: fake-kakao-client-id
+    client-secret: fake-kakao-client-secret
+    redirect-uri: http://localhost:8080/api/auth/oauth2/callback/kakao
+  naver:
+    client-id: fake-naver-client-id
+    client-secret: fake-naver-client-secret
+    redirect-uri: http://localhost:8080/api/auth/oauth2/callback/naver
+
+kis:
+  app-key: fake-kis-key
+  app-secret: fake-kis-secret
+  base-url: https://openapi.koreainvestment.com:9443
+
+naver:
+  search:
+    client-id: fake-naver-search-id
+    client-secret: fake-naver-search-secret
+
+marketaux:
+  api-token: fake-marketaux-token
+
+cerebras:
+  api-keys: fake-cerebras-key
+  model: test-model
+
+gemini:
+  api-keys: fake-gemini-key
+  model: test-model
+
+logging:
+  level:
+    com.fundmessenger: WARN
+    org.springframework.security: WARN
